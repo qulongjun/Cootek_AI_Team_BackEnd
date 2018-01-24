@@ -7,8 +7,7 @@ import com.jfinal.kit.PropKit;
 import com.jfinal.plugin.activerecord.ActiveRecordPlugin;
 import com.jfinal.plugin.c3p0.C3p0Plugin;
 import com.jfinal.render.ViewType;
-import com.qulongjun.team.domain.Feedback;
-import com.qulongjun.team.domain.User;
+import com.qulongjun.team.domain.*;
 import com.qulongjun.team.intercept.RequestInterceptor;
 
 
@@ -55,6 +54,10 @@ public class CommonConfig extends JFinalConfig {
         me.add(arp);
         arp.addMapping("db_user", User.class);
         arp.addMapping("db_feedback", Feedback.class);
+        arp.addMapping("db_order", Order.class);
+        arp.addMapping("db_shop", Shop.class);
+        arp.addMapping("db_shop_food", Food.class);
+        arp.addMapping("db_shop_category", FoodCategory.class);
 
 
     }

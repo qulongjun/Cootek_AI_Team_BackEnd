@@ -8,12 +8,16 @@ import com.qulongjun.team.domain.User;
 import com.qulongjun.team.utils.DateUtils;
 import com.qulongjun.team.utils.RenderUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by qulongjun on 2018/1/24.
  */
 public class FeedbackController extends Controller {
     public void list() {
-
+        List<Feedback> feedbackList = Feedback.feedbackDao.find("SELECT * FROM `db_feedback` WHERE user_id="+getPara("id"));
+        renderJson(feedbackList);
     }
 
     public void create() {
