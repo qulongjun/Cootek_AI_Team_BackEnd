@@ -18,7 +18,7 @@ public class Food extends Model<Food> {
         for (String key : this._getAttrNames()) {
             entry.put(key, this.get(key));
         }
-        entry.put("category", FoodCategory.foodCategoryDao.findById(this.get("category_id")));
+        entry.put("category", FoodCategory.foodCategoryDao.findById(this.get("category_id"))._toJson());
         entry.put("count", "1200");
         return entry;
     }
