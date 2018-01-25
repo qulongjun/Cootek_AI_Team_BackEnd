@@ -4,7 +4,10 @@ import com.jfinal.core.Controller;
 
 import com.jfinal.json.Jackson;
 import com.jfinal.kit.HttpKit;
+import com.jfinal.plugin.activerecord.Db;
+import com.jfinal.plugin.activerecord.IAtom;
 import com.qiniu.util.Base64;
+import com.qulongjun.team.config.error.EmptyException;
 import com.qulongjun.team.config.error.OtherException;
 import com.qulongjun.team.config.error.UniqueException;
 import com.qulongjun.team.config.error.ValidateException;
@@ -14,6 +17,7 @@ import com.qulongjun.team.utils.RenderUtils;
 import sun.misc.BASE64Decoder;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,17 +26,29 @@ public class UserController extends Controller {
      * 绑定微信用户和真实信息
      */
     public void bind() {
-        String key = getPara("key");
-        User user = User.userDao.findFirst("SELECT * FROM `db_user` WHERE realName='" + getPara("realName") + "'");
-        if (user.get("openId") != null) {
-            //该用户已经绑定微信
-            throw new UniqueException("无法重复绑定微信，请先解绑");
-        } else {
-            //绑定
-            Boolean result = user.set("tel", getPara("tel")).set("openId", getPara("id")).update();
-            if (!result) throw new OtherException("服务器异常");
-            renderJson(RenderUtils.CODE_SUCCESS);
-        }
+        User newUser = User.userDao.findFirst("SELECT * FROM `db_user` WHERE realName='" + getPara("realName") + "'");
+        if(newUser==null)throw new EmptyException("请输入团队成员真实姓名");
+        Boolean result = Db.tx(new IAtom() {
+            @Override
+            public boolean run() throws SQLException {
+                Boolean result = true;
+                Boolean change_bind = getParaToBoolean("change_bind");
+                if (change_bind) {
+                    //换绑
+                    User oldUser = User.userDao.findFirst("SELECT * FROM `db_user` WHERE openId='" + getPara("id") + "'");
+                    if (oldUser != null) {
+                        result = result && oldUser.set("tel", null).set("openId", null).update();
+                    }
+                }
+                User newUser = User.userDao.findFirst("SELECT * FROM `db_user` WHERE realName='" + getPara("realName") + "'");
+                //绑定
+                result = result && newUser.set("tel", getPara("tel")).set("openId", getPara("id")).update();
+                return result;
+            }
+        });
+        if (!result) throw new OtherException("服务器异常");
+        renderJson(RenderUtils.CODE_SUCCESS);
+
     }
 
     /**
@@ -46,9 +62,10 @@ public class UserController extends Controller {
             if (wx_user.get("errcode") == null) {
                 //没有报错
                 String openid = wx_user.get("openid").toString();
-                User user = User.userDao.findFirst("SELECT * FROM `db_user` WHERE openId='" + openid+"'");
+                User user = User.userDao.findFirst("SELECT * FROM `db_user` WHERE openId='" + openid + "'");
                 Map result = new HashMap();
                 result.put("is_bind", user != null);
+                result.put("id",openid);
                 result.put("user", user);
                 result.put("time", DateUtils.getCurrentDate());
                 renderJson(result);

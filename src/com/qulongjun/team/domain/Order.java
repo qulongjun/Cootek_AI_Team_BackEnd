@@ -19,6 +19,13 @@ public class Order extends Model<Order> {
             entry.put(key, this.get(key));
         }
         entry.put("food", Food.foodDao.findById(this.get("food_id"))._toJson());
+        if (this.get("accepter") != null) {
+            entry.put("accepter", User.userDao.findById(this.get("accepter")));
+
+        }
+        if (this.get("finisher") != null) {
+            entry.put("finisher", User.userDao.findById(this.get("finisher")));
+        }
         return entry;
     }
 

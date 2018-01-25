@@ -1,6 +1,7 @@
 package com.qulongjun.team.controller;
 
 import com.jfinal.core.Controller;
+import com.qulongjun.team.config.error.EmptyException;
 import com.qulongjun.team.config.error.OtherException;
 import com.qulongjun.team.config.error.UniqueException;
 import com.qulongjun.team.domain.Order;
@@ -17,20 +18,20 @@ import java.util.List;
  */
 public class OrderController extends Controller {
     public void history() {
-        List<Order> orderList = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId")+" ORDER BY order_time DESC");
+        List<Order> orderList = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " ORDER BY order_time DESC,state DESC");
         renderJson(Order._toListJson(orderList));
     }
 
     public void today() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        Order order = Order.orderDao.findFirst("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " AND order_time='" + sdf.format(new Date()) + "'");
+        Order order = Order.orderDao.findFirst("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " AND order_time='" + sdf.format(new Date()) + "' AND state != -1");
         renderJson(order._toJson());
     }
 
     public void create() {
         Order order = new Order();
         String time = getPara("time").split(" ")[0];
-        int size = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " AND order_time='" + time + "'").size();
+        int size = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " AND order_time='" + time + "' AND state != -1").size();
         if (size == 0) {
             Boolean result = order.set("user_id", getPara("userId"))
                     .set("food_id", getPara("foodId"))
@@ -41,5 +42,22 @@ public class OrderController extends Controller {
             if (!result) throw new OtherException("服务器异常");
             renderJson(RenderUtils.CODE_SUCCESS);
         } else throw new UniqueException("当前日期已经完成订餐");
+    }
+
+
+    public void findById() {
+        Order order = Order.orderDao.findById(getPara("id"));
+        if (order != null) {
+            renderJson(order._toJson());
+        } else throw new EmptyException("订餐记录不存在！");
+    }
+
+    public void cancel() {
+        Order order = Order.orderDao.findById(getPara("id"));
+        if (order != null) {
+            Boolean result = order.set("state", -1).set("cancel_time", DateUtils.getCurrentDate()).update();
+            if (!result) throw new OtherException("服务器异常");
+            renderJson(RenderUtils.CODE_SUCCESS);
+        } else throw new EmptyException("订餐记录不存在！");
     }
 }
