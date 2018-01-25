@@ -17,17 +17,27 @@ import java.util.List;
  * Created by qulongjun on 2018/1/24.
  */
 public class OrderController extends Controller {
+    /**
+     * 查找历史订单
+     */
     public void history() {
         List<Order> orderList = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " ORDER BY order_time DESC,state DESC");
         renderJson(Order._toListJson(orderList));
     }
 
+
+    /**
+     * 查找今天的订单
+     */
     public void today() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Order order = Order.orderDao.findFirst("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " AND order_time='" + sdf.format(new Date()) + "' AND state != -1");
         renderJson(order._toJson());
     }
 
+    /**
+     * 创建订单
+     */
     public void create() {
         Order order = new Order();
         String time = getPara("time").split(" ")[0];
@@ -45,6 +55,9 @@ public class OrderController extends Controller {
     }
 
 
+    /**
+     * 根据ID查找
+     */
     public void findById() {
         Order order = Order.orderDao.findById(getPara("id"));
         if (order != null) {
@@ -52,6 +65,9 @@ public class OrderController extends Controller {
         } else throw new EmptyException("订餐记录不存在！");
     }
 
+    /**
+     * 取消点餐
+     */
     public void cancel() {
         Order order = Order.orderDao.findById(getPara("id"));
         if (order != null) {

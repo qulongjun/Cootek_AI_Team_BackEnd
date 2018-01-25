@@ -16,7 +16,7 @@ import java.util.UUID;
  */
 public class UploadController extends Controller {
     /**
-     * Feedback
+     * 上传反馈的截图信息
      */
     public void feedback() {
         try {

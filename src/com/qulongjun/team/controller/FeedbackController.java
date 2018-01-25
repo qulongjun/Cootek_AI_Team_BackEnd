@@ -15,11 +15,17 @@ import java.util.List;
  * Created by qulongjun on 2018/1/24.
  */
 public class FeedbackController extends Controller {
+    /**
+     * 我的问题列表
+     */
     public void list() {
-        List<Feedback> feedbackList = Feedback.feedbackDao.find("SELECT * FROM `db_feedback` WHERE user_id="+getPara("id"));
+        List<Feedback> feedbackList = Feedback.feedbackDao.find("SELECT * FROM `db_feedback` WHERE user_id=" + getPara("id"));
         renderJson(feedbackList);
     }
 
+    /**
+     * 问题反馈
+     */
     public void create() {
         User user = User.userDao.findById(getPara("id"));
         if (user != null) {
