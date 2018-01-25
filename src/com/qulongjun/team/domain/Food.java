@@ -19,7 +19,7 @@ public class Food extends Model<Food> {
             entry.put(key, this.get(key));
         }
         entry.put("category", FoodCategory.foodCategoryDao.findById(this.get("category_id"))._toJson());
-        entry.put("count", "1200");
+        entry.put("count", Food.foodDao.find("SELECT * FROM `db_order` WHERE food_id="+this.get("id")).size());
         return entry;
     }
 
