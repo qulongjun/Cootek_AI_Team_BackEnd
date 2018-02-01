@@ -8,6 +8,7 @@ import com.qulongjun.team.domain.Order;
 import com.qulongjun.team.utils.DateUtils;
 import com.qulongjun.team.utils.RenderUtils;
 import com.sun.org.apache.xpath.internal.operations.Or;
+import org.junit.Test;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -39,20 +40,32 @@ public class OrderController extends Controller {
      * 创建订单
      */
     public void create() {
-        Order order = new Order();
-        String time = getPara("time").split(" ")[0];
-        int size = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " AND order_time='" + time + "' AND state != -1").size();
-        if (size == 0) {
-            Boolean result = order.set("user_id", getPara("userId"))
-                    .set("food_id", getPara("foodId"))
-                    .set("create_time", DateUtils.getCurrentDate())
-                    .set("order_time", time)
-                    .set("state", 0)
-                    .save();
-            if (!result) throw new OtherException("服务器异常");
-            renderJson(RenderUtils.CODE_SUCCESS);
-        } else throw new UniqueException("当前日期已经完成订餐");
+        try {
+            Order order = new Order();
+            String time = getPara("time").split(" ")[0];
+//            if (canOrder(time + " 16:00:00")) {
+                int size = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " AND order_time='" + time + "' AND state != -1").size();
+                if (size == 0) {
+                    Boolean result = order.set("user_id", getPara("userId"))
+                            .set("food_id", getPara("foodId"))
+                            .set("create_time", DateUtils.getCurrentDate())
+                            .set("order_time", time)
+                            .set("state", 0)
+                            .save();
+                    if (!result) throw new OtherException("服务器异常");
+                    renderJson(RenderUtils.CODE_SUCCESS);
+                } else throw new UniqueException("当前日期已经完成订餐");
+//            } else throw new UniqueException("当日订餐已截止！");
+        } catch (Exception e) {
+            throw new OtherException("日期格式转换错误！");
+        }
     }
+
+
+//    public boolean canOrder(String time) throws Exception {
+//        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//        return (simpleDateFormat.parse(time)).after(new Date());
+//    }
 
 
     /**
