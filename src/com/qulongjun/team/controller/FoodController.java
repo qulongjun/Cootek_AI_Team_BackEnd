@@ -16,4 +16,6 @@ public class FoodController extends Controller {
         List<Shop> shopList = Shop.shopDao.find("SELECT * FROM `db_shop` WHERE state=1");
         renderJson(Shop._toListJson(shopList));
     }
+
+
 }

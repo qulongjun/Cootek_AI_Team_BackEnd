@@ -39,4 +39,47 @@ public class Order extends Model<Order> {
         }
         return arr;
     }
+
+
+    public static Map<String, Map<String, List>> _toSimpleListJson(List<Order> orderList) {
+        Map<String, Map<String, List>> results = new HashMap<>();
+        for (Order order : orderList) {
+            Map food = Food.foodDao.findById(order.get("food_id"))._toJson();
+            User user = User.userDao.findById(order.get("user_id"));
+            FoodCategory category = FoodCategory.foodCategoryDao.findById(food.get("category_id"));
+            Shop shop = Shop.shopDao.findById(category.get("shop_id"));
+            if (results.get(shop.getStr("shop")) != null) {
+                Map<String, List> result = results.get(shop.getStr("shop"));
+                if (result.get(category.getStr("category")) != null) {
+                    List t = result.get(category.getStr("category"));
+                    Map m = new HashMap();
+                    m.put("name", food.get("food"));
+                    m.put("order_id", order.get("id"));
+                    m.put("user", user.get("realName"));
+                    t.add(m);
+                    result.put(category.getStr("category"), t);
+                } else {
+                    List t = new ArrayList();
+                    Map m = new HashMap();
+                    m.put("name", food.get("food"));
+                    m.put("order_id", order.get("id"));
+                    m.put("user", user.get("realName"));
+                    t.add(m);
+                    result.put(category.getStr("category"), t);
+                }
+
+            } else {
+                Map<String, List> result = new HashMap<>();
+                List t = new ArrayList();
+                Map m = new HashMap();
+                m.put("name", food.get("food"));
+                m.put("order_id", order.get("id"));
+                m.put("user", user.get("realName"));
+                t.add(m);
+                result.put(category.getStr("category"), t);
+                results.put(shop.getStr("shop"), result);
+            }
+        }
+        return results;
+    }
 }

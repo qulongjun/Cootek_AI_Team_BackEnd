@@ -7,6 +7,7 @@ import com.qulongjun.team.config.error.UniqueException;
 import com.qulongjun.team.domain.Order;
 import com.qulongjun.team.utils.DateUtils;
 import com.qulongjun.team.utils.RenderUtils;
+import com.qulongjun.team.utils.UUIDUtils;
 import com.sun.org.apache.xpath.internal.operations.Or;
 
 import java.text.SimpleDateFormat;
@@ -34,6 +35,26 @@ public class OrderController extends Controller {
         Order order = Order.orderDao.findFirst("SELECT * FROM `db_order` WHERE user_id=" + getPara("userId") + " AND order_time='" + sdf.format(new Date()) + "' AND state != -1");
         renderJson(order._toJson());
     }
+
+
+    /**
+     * 查找今天全部订单信息
+     */
+    public void ordered() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        List<Order> orderList = Order.orderDao.find("SELECT * FROM `db_order` WHERE order_time='" + sdf.format(new Date()) + "' AND state = 0");
+        renderJson(Order._toListJson(orderList));
+    }
+
+    /**
+     * 快速查看当天订单
+     */
+    public void index() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        List<Order> orderList = Order.orderDao.find("SELECT * FROM `db_order` WHERE order_time='" + sdf.format(new Date()) + "' AND state = 0");
+        renderJson(Order._toSimpleListJson(orderList));
+    }
+
 
     /**
      * 创建订单
