@@ -7,7 +7,10 @@ import com.qulongjun.team.domain.Shop;
 import com.qulongjun.team.utils.DateUtils;
 import com.qulongjun.team.utils.RenderUtils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by qulongjun on 2018/1/25.
@@ -18,7 +21,17 @@ public class FoodController extends Controller {
      */
     public void shop() {
         List<Shop> shopList = Shop.shopDao.find("SELECT * FROM `db_shop` WHERE state=1");
-        renderJson(Shop._toListJson(shopList));
+        Map history = new HashMap();
+        history.put("id", 0);
+        history.put("state", 1);
+        history.put("shop", "常点餐品");
+        history.put("create_time", DateUtils.getCurrentDate());
+        List<Food> foodList = Food.foodDao.find("SELECT DISTINCT f.* FROM `db_order` o,`db_shop_food` f WHERE o.user_id=" + getPara("id") + " AND o.food_id = f.id");
+        history.put("food", Food._toListJson(foodList));
+        List result = new ArrayList();
+        result.add(history);
+        result.addAll(Shop._toListJson(shopList));
+        renderJson(result);
     }
 
 

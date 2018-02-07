@@ -31,9 +31,9 @@ public class Food extends Model<Food> {
         Collections.sort(arr, new Comparator() {
             @Override
             public int compare(Object o1, Object o2) {
-                Food temp1 = (Food) o1;
-                Food temp2 = (Food) o2;
-                return (temp1.getInt("count")) - (temp2.getInt("count"));
+                Map temp1 = (Map) o1;
+                Map temp2 = (Map) o2;
+                return ((Integer)temp2.get("count")) - ((Integer)temp1.get("count"));
             }
         });
         return arr;

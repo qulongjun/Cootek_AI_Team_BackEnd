@@ -2,10 +2,7 @@ package com.qulongjun.team.domain;
 
 import com.jfinal.plugin.activerecord.Model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by qulongjun on 2018/1/25.
@@ -25,6 +22,14 @@ public class Shop extends Model<Shop> {
                 temp.add(foodList.get(i)._toJson());
             }
         }
+        Collections.sort(temp, new Comparator() {
+            @Override
+            public int compare(Object o1, Object o2) {
+                Map temp1 = (Map) o1;
+                Map temp2 = (Map) o2;
+                return ((Integer) temp2.get("count")) - ((Integer) temp1.get("count"));
+            }
+        });
         entry.put("food", temp);
         return entry;
     }
