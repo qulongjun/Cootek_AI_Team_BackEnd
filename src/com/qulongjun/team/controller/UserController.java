@@ -55,7 +55,7 @@ public class UserController extends Controller {
      * 获取用户信息
      */
     public void info() {
-        String wx_info = HttpKit.get("https://api.weixin.qq.com/sns/jscode2session?appid=wxe435710d10ed5a2f&secret=b05a6ec806b3e21f226b17264bc3c552&js_code=" + getPara("code") + "&grant_type=authorization_code");
+        String wx_info = HttpKit.get("https://api.weixin.qq.com/sns/jscode2session?appid=wxe435710d10ed5a2f&secret=e666291333fc7856673fda89de1233d7&js_code=" + getPara("code") + "&grant_type=authorization_code");
         if (wx_info != null && wx_info != "") {
             Jackson jackson = new Jackson();
             Map wx_user = jackson.parse(wx_info, Map.class);
