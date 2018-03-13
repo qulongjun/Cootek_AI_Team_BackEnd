@@ -3,6 +3,7 @@ package com.qulongjun.team.controller;
 import com.jfinal.core.Controller;
 import com.qulongjun.team.config.error.OtherException;
 import com.qulongjun.team.domain.Food;
+import com.qulongjun.team.domain.FoodCategory;
 import com.qulongjun.team.domain.Shop;
 import com.qulongjun.team.utils.DateUtils;
 import com.qulongjun.team.utils.RenderUtils;
@@ -49,5 +50,26 @@ public class FoodController extends Controller {
                 .set("desp", getPara("desp")).save();
         if (!result) throw new OtherException("服务器异常");
         renderJson(RenderUtils.CODE_SUCCESS);
+    }
+
+
+    /**
+     * 获取餐厅列表
+     */
+    public void restaurant() {
+        List<Shop> shopList = Shop.shopDao.find("SELECT * FROM `db_shop` WHERE state=1");
+        renderJson(Shop._toListSimpleJson(shopList));
+    }
+
+    /**
+     * 获取餐厅菜品
+     */
+    public void cookbook() {
+        int restaurant = 0;
+        if (getPara("id") != null) {
+            restaurant = getParaToInt("id");
+        }
+        List<Shop> shopList = Shop.shopDao.find("SELECT * FROM `db_shop` WHERE state=1 " + (restaurant != 0 ? " AND id=" + restaurant : ""));
+        renderJson(Shop._toListJson(shopList));
     }
 }

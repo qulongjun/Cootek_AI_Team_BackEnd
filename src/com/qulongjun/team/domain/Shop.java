@@ -34,10 +34,30 @@ public class Shop extends Model<Shop> {
         return entry;
     }
 
+
+    public Map _toSimpleJson() {
+        Map entry = new HashMap();
+        for (String key : this._getAttrNames()) {
+            entry.put(key, this.get(key));
+        }
+        return entry;
+    }
+
     public static List _toListJson(List<Shop> shopList) {
         List arr = new ArrayList();
         for (Shop shop : shopList) {
             Map result = shop._toJson();
+            if (result != null) {
+                arr.add(result);
+            }
+        }
+        return arr;
+    }
+
+    public static List _toListSimpleJson(List<Shop> shopList) {
+        List arr = new ArrayList();
+        for (Shop shop : shopList) {
+            Map result = shop._toSimpleJson();
             if (result != null) {
                 arr.add(result);
             }
