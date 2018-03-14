@@ -26,7 +26,7 @@ public class FoodController extends Controller {
         history.put("state", 1);
         history.put("shop", "常点餐品");
         history.put("create_time", DateUtils.getCurrentDate());
-        List<Food> foodList = Food.foodDao.find("SELECT DISTINCT f.* FROM `db_order` o,`db_shop_food` f WHERE o.user_id=" + getPara("id") + " AND o.food_id = f.id");
+        List<Food> foodList = Food.foodDao.find("SELECT DISTINCT f.* FROM `db_order` o,`db_shop_food` f,`db_shop_category` c,`db_shop` s WHERE o.user_id=" + getPara("id") + " AND o.food_id = f.id AND f.category_id=c.id AND c.shop_id =s.id AND s.state=1");
         history.put("food", Food._toListJson(foodList));
         List result = new ArrayList();
         result.add(history);
