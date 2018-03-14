@@ -111,11 +111,11 @@ public class OrderController extends Controller {
      */
     public void cancel() {
         Order order = Order.orderDao.findById(getPara("id"));
-        if (order != null) {
+        if (order != null && order.getInt("state") == 0) {
             Boolean result = order.set("state", -1).set("cancel_time", DateUtils.getCurrentDate()).update();
             if (!result) throw new OtherException("服务器异常");
             renderJson(RenderUtils.CODE_SUCCESS);
-        } else throw new EmptyException("订餐记录不存在！");
+        } else throw new EmptyException("订餐记录不存在或当前状态无法取消！");
     }
 
 
@@ -239,14 +239,14 @@ public class OrderController extends Controller {
         String id = getPara("id");
         String time = getPara("time");
         int state = getParaToInt("state");//0 包含已取消订单，  -1 不包含已取消订单
-        List<Order> orderList = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + id + (time != null ? " AND order_time='" + time : "'") + (state == -1 ? " AND state != -1" : ""));
+        List<Order> orderList = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + id + (state == -1 ? " AND state != -1" : "") + (time != null ? " AND order_time='" + time + "'" : "") + " ORDER BY order_time DESC,state DESC");
         renderJson(Order._toListJson(orderList));
     }
 
     public boolean isLimit(String date) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-            if ((new Date()).compareTo(sdf.parse(date)) > 0) {
+            if ((sdf.parse(sdf.format(new Date()))).compareTo(sdf.parse(date)) > 0) {
                 return false;
             }
             SimpleDateFormat timeDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
