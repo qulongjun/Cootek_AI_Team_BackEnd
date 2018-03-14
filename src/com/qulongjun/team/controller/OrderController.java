@@ -10,8 +10,6 @@ import com.qulongjun.team.config.error.UniqueException;
 import com.qulongjun.team.config.error.ValidateException;
 import com.qulongjun.team.domain.*;
 import com.qulongjun.team.utils.*;
-import com.sun.org.apache.xpath.internal.operations.Or;
-import org.junit.Test;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
