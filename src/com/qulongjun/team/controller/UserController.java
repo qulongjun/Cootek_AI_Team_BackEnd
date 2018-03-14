@@ -27,7 +27,7 @@ public class UserController extends Controller {
      */
     public void bind() {
         User newUser = User.userDao.findFirst("SELECT * FROM `db_user` WHERE realName='" + getPara("realName") + "'");
-        if(newUser==null)throw new EmptyException("请输入团队成员真实姓名");
+        if (newUser == null) throw new EmptyException("请输入团队成员真实姓名");
         Boolean result = Db.tx(new IAtom() {
             @Override
             public boolean run() throws SQLException {
@@ -65,7 +65,7 @@ public class UserController extends Controller {
                 User user = User.userDao.findFirst("SELECT * FROM `db_user` WHERE openId='" + openid + "'");
                 Map result = new HashMap();
                 result.put("is_bind", user != null);
-                result.put("id",openid);
+                result.put("id", openid);
                 result.put("user", user);
                 result.put("time", DateUtils.getCurrentDate());
                 renderJson(result);
@@ -75,5 +75,17 @@ public class UserController extends Controller {
             }
         }
 
+    }
+
+
+    /**
+     * 获取我的id
+     */
+    public void getId() {
+        String tel = getPara("tel");
+        User user = User.userDao.findFirst("SELECT * FROM `db_user` WHERE tel='" + tel + "'");
+        if (user != null) {
+            renderJson(user);
+        }
     }
 }

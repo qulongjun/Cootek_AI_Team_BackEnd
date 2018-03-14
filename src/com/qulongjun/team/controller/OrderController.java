@@ -7,9 +7,11 @@ import com.jfinal.plugin.activerecord.IAtom;
 import com.qulongjun.team.config.error.EmptyException;
 import com.qulongjun.team.config.error.OtherException;
 import com.qulongjun.team.config.error.UniqueException;
+import com.qulongjun.team.config.error.ValidateException;
 import com.qulongjun.team.domain.*;
 import com.qulongjun.team.utils.*;
 import com.sun.org.apache.xpath.internal.operations.Or;
+import org.junit.Test;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -109,11 +111,11 @@ public class OrderController extends Controller {
      */
     public void cancel() {
         Order order = Order.orderDao.findById(getPara("id"));
-        if (order != null) {
+        if (order != null && order.getInt("state") == 0) {
             Boolean result = order.set("state", -1).set("cancel_time", DateUtils.getCurrentDate()).update();
             if (!result) throw new OtherException("服务器异常");
             renderJson(RenderUtils.CODE_SUCCESS);
-        } else throw new EmptyException("订餐记录不存在！");
+        } else throw new EmptyException("订餐记录不存在或当前状态无法取消！");
     }
 
 
@@ -203,5 +205,59 @@ public class OrderController extends Controller {
             }
         }
         renderJson(RenderUtils.CODE_SUCCESS);
+    }
+
+
+    /**
+     * 自助下单
+     */
+    public void selfOrder() {
+        String id = getPara("user_id"); //用户id
+        String food_id = getPara("food_id"); //菜谱id
+        String time = getPara("time"); //创建日期
+        if (isLimit(time)) {
+            int size = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + id + " AND order_time='" + time + "' AND state != -1").size();
+            if (size == 0) {
+                //之前没点过
+                Order order = new Order();
+                order.set("user_id", id)
+                        .set("food_id", food_id)
+                        .set("create_time", DateUtils.getCurrentDate())
+                        .set("order_time", time)
+                        .set("state", 0);
+                if (!(order.save())) throw new OtherException("服务器异常");
+                renderJson(RenderUtils.CODE_SUCCESS);
+            } else {
+                //之前点过了
+                throw new UniqueException("当前日期已经完成订餐");
+            }
+        } else throw new ValidateException("当前日期点餐已经截止！");
+    }
+
+
+    public void list() {
+        String id = getPara("id");
+        String time = getPara("time");
+        int state = getParaToInt("state");//0 包含已取消订单，  -1 不包含已取消订单
+        List<Order> orderList = Order.orderDao.find("SELECT * FROM `db_order` WHERE user_id=" + id + (state == -1 ? " AND state != -1" : "") + (time != null ? " AND order_time='" + time + "'" : "") + " ORDER BY order_time DESC,state DESC");
+        renderJson(Order._toListJson(orderList));
+    }
+
+    public boolean isLimit(String date) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            if ((sdf.parse(sdf.format(new Date()))).compareTo(sdf.parse(date)) > 0) {
+                return false;
+            }
+            SimpleDateFormat timeDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            if (date.equals(sdf.format(new Date()))) {
+                if ((new Date()).compareTo(timeDF.parse(date + " 23:40:00")) > 0) {
+                    return false;
+                } else return true;
+            }
+            return true;
+        } catch (Exception e) {
+            throw new OtherException("日期判断异常");
+        }
     }
 }
